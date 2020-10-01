@@ -22,6 +22,8 @@ import warnings
 
 import click
 
+from klio_core import utils as core_utils
+
 from klio_cli import __version__ as version
 from klio_cli import options
 from klio_cli.commands import image as image_commands
@@ -110,7 +112,7 @@ def configuration():
 #####
 @image.command("build", help="Build the Docker worker image.")
 @options.image_tag
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def build_image(klio_config, config_meta, **kwargs):
     if not kwargs.get("image_tag"):
         kwargs["image_tag"] = cli_utils.get_git_sha(config_meta.job_dir)
@@ -126,7 +128,7 @@ def build_image(klio_config, config_meta, **kwargs):
 @job.command("run", help="Run a klio job.")
 @options.image_tag
 @options.runtime
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def run_job(klio_config, config_meta, **kwargs):
     direct_runner = cli_utils.is_direct_runner(
         klio_config, kwargs.pop("direct_runner")
@@ -180,7 +182,7 @@ def run_job(klio_config, config_meta, **kwargs):
         "provided."
     )
 )
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def stop_job(klio_config, config_meta, job_name, region, gcp_project):
     if job_name and any([config_meta.job_dir, config_meta.config_file]):
         logging.error(
@@ -215,7 +217,7 @@ def stop_job(klio_config, config_meta, job_name, region, gcp_project):
 )
 @options.image_tag
 @options.runtime
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def deploy_job(klio_config, config_meta, **kwargs):
     direct_runner = cli_utils.is_direct_runner(
         klio_config, kwargs.pop("direct_runner")
@@ -297,7 +299,7 @@ def create_job(addl_job_opts, output, **known_kwargs):
 @job.command(
     "delete", help=("Delete GCP-related resources created by a Klio job")
 )
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def delete_job(klio_config, config_meta):
     job_commands.delete.DeleteJob(klio_config).delete()
 
@@ -311,7 +313,7 @@ def delete_job(klio_config, config_meta):
 @options.image_tag
 @options.force_build
 @click.argument("pytest_args", nargs=-1, type=click.UNPROCESSED)
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def test_job(
     klio_config, config_meta, force_build, image_tag, pytest_args, **kwargs
 ):
@@ -356,7 +358,7 @@ def test_job(
     ),
 )
 @options.create_resources
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def verify_job(klio_config, config_meta, create_resources):
     job = job_commands.verify.VerifyJob(klio_config, create_resources)
     job.verify_job()
@@ -374,7 +376,7 @@ def verify_job(klio_config, config_meta, create_resources):
 @options.force_build
 @options.image_tag
 @options.list_steps
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def audit_job(klio_config, config_meta, force_build, image_tag, list_steps):
 
     git_sha = cli_utils.get_git_sha(config_meta.job_dir, image_tag)
@@ -403,7 +405,7 @@ def audit_job(klio_config, config_meta, force_build, image_tag, list_steps):
 # `klio job config` subcommands
 #####
 def _job_config(job_dir, config_file, verb, *args, **kwargs):
-    _, config_path = cli_utils.get_config_job_dir(job_dir, config_file)
+    _, config_path = core_utils.get_config_job_dir(job_dir, config_file)
 
     effective_job_config = job_commands.configuration.EffectiveJobConfig(
         config_path
@@ -494,7 +496,7 @@ def get_job_config(job_dir, config_file, section_property):
 @click.argument(
     "restrictions", nargs=-1, required=False, type=click.UNPROCESSED
 )
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def collect_profiling_data(
     klio_config,
     config_meta,
@@ -608,7 +610,7 @@ def _profile(subcommand, klio_config, config_meta, **kwargs):
 @options.output_file(help="Output file for results. [default: stdout]")
 @options.show_logs
 @click.argument("entity_ids", nargs=-1, required=False)
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def profile_memory(klio_config, config_meta, **kwargs):
     _profile("memory", klio_config, config_meta, **kwargs)
 
@@ -635,7 +637,7 @@ def profile_memory(klio_config, config_meta, **kwargs):
 @options.output_file(help="Output file for results. [default: stdout]")
 @options.show_logs
 @click.argument("entity_ids", nargs=-1, required=False)
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def profile_memory_per_line(klio_config, config_meta, **kwargs):
     _profile("memory-per-line", klio_config, config_meta, **kwargs)
 
@@ -662,7 +664,7 @@ def profile_memory_per_line(klio_config, config_meta, **kwargs):
 @options.output_file(help="Output file for results. [default: stdout]")
 @options.show_logs
 @click.argument("entity_ids", nargs=-1, required=False)
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def profile_cpu(klio_config, config_meta, **kwargs):
     _profile("cpu", klio_config, config_meta, **kwargs)
 
@@ -689,7 +691,7 @@ def profile_cpu(klio_config, config_meta, **kwargs):
 @options.iterations
 @options.show_logs
 @click.argument("entity_ids", nargs=-1, required=False)
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def profile_timeit(klio_config, config_meta, **kwargs):
     _profile("timeit", klio_config, config_meta, **kwargs)
 
@@ -704,7 +706,7 @@ def profile_timeit(klio_config, config_meta, **kwargs):
 @options.bottom_up
 @options.non_klio
 @click.argument("entity_ids", nargs=-1, required=True)
-@cli_utils.with_klio_config
+@core_utils.with_klio_config
 def publish(
     entity_ids,
     force,

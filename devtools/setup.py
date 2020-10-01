@@ -76,6 +76,7 @@ INSTALL_REQUIRES = [
     "click",
     "docker",
     "dockerpty",
+    "glom",
     "klio-cli>=1.0.0",
     "klio-core>=0.2.0",
 ]
