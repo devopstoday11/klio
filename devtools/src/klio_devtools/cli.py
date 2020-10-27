@@ -16,6 +16,7 @@
 import os
 
 import click
+import klio_core.options as core_options
 
 from klio_cli import cli as main_cli
 from klio_cli import options
@@ -39,8 +40,8 @@ from klio_devtools.commands import develop
         "bump the versions of the libraries to ensure proper installation."
     ),
 )
-@options.job_dir
-@options.config_file
+@core_options.job_dir
+@core_options.config_file
 @options.image_tag
 @options.runtime
 @click.option(

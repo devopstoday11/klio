@@ -22,6 +22,8 @@ import warnings
 
 import click
 
+import klio_core.options as core_options
+
 from klio_core import utils as core_utils
 
 from klio_cli import __version__ as version
@@ -167,8 +169,8 @@ def run_job(klio_config, config_meta, **kwargs):
         "supported."
     ),
 )
-@options.job_dir
-@options.config_file
+@core_options.job_dir
+@core_options.config_file
 @options.job_name(
     help=(
         "Name of job, if neither ``--job-dir`` nor ``--config-file`` is not "
@@ -417,8 +419,8 @@ def _job_config(job_dir, config_file, verb, *args, **kwargs):
 @configuration.command(
     "show", help="Show the complete effective configuration for a Klio job.",
 )
-@options.job_dir
-@options.config_file
+@core_options.job_dir
+@core_options.config_file
 def show_job_config(job_dir, config_file):
     _job_config(job_dir, config_file, "show")
 
@@ -431,8 +433,8 @@ def show_job_config(job_dir, config_file):
         "pairs of ``SECTION.PROPERTY=VALUE`` are accepted."
     ),
 )
-@options.job_dir
-@options.config_file
+@core_options.job_dir
+@core_options.config_file
 @click.argument(
     "target_to_value",
     required=True,
@@ -446,8 +448,8 @@ def set_job_config(job_dir, config_file, target_to_value):
 @configuration.command(
     "unset", help="Unset a configuration value for a Klio job.",
 )
-@options.job_dir
-@options.config_file
+@core_options.job_dir
+@core_options.config_file
 @click.argument("section_property", required=True, metavar="SECTION.PROPERTY")
 def unset_job_config(job_dir, config_file, section_property):
     _job_config(job_dir, config_file, "unset", section_property)
@@ -456,8 +458,8 @@ def unset_job_config(job_dir, config_file, section_property):
 @configuration.command(
     "get", help="Get the value for a configuration property of a Klio job.",
 )
-@options.job_dir
-@options.config_file
+@core_options.job_dir
+@core_options.config_file
 @click.argument("section_property", required=True, metavar="SECTION.PROPERTY")
 def get_job_config(job_dir, config_file, section_property):
     _job_config(job_dir, config_file, "get", section_property)
@@ -479,8 +481,8 @@ def get_job_config(job_dir, config_file, section_property):
         "``klio-job.yaml``."
     ),
 )
-@options.job_dir(mutex=["gcs_location", "input_file"])
-@options.config_file(mutex=["gcs_location", "input_file"])
+@core_options.job_dir(mutex=["gcs_location", "input_file"])
+@core_options.config_file(mutex=["gcs_location", "input_file"])
 @options.gcs_location
 @options.since
 @options.until
@@ -596,10 +598,10 @@ def _profile(subcommand, klio_config, config_meta, **kwargs):
 )
 @options.image_tag
 @options.force_build
-@options.interval
-@options.include_children
-@options.multiprocess
-@options.plot_graph
+@core_options.interval
+@core_options.include_children
+@core_options.multiprocess
+@core_options.plot_graph
 @options.input_file(
     help=(
         "File of entity IDs (separated by a new line character) with "
@@ -608,7 +610,7 @@ def _profile(subcommand, klio_config, config_meta, **kwargs):
     ),
 )
 @options.output_file(help="Output file for results. [default: stdout]")
-@options.show_logs
+@core_options.show_logs
 @click.argument("entity_ids", nargs=-1, required=False)
 @core_utils.with_klio_config
 def profile_memory(klio_config, config_meta, **kwargs):
@@ -623,8 +625,8 @@ def profile_memory(klio_config, config_meta, **kwargs):
         "method."
     ),
 )
-@options.maximum
-@options.per_element
+@core_options.maximum
+@core_options.per_element
 @options.image_tag
 @options.force_build
 @options.input_file(
@@ -635,7 +637,7 @@ def profile_memory(klio_config, config_meta, **kwargs):
     ),
 )
 @options.output_file(help="Output file for results. [default: stdout]")
-@options.show_logs
+@core_options.show_logs
 @click.argument("entity_ids", nargs=-1, required=False)
 @core_utils.with_klio_config
 def profile_memory_per_line(klio_config, config_meta, **kwargs):
@@ -652,8 +654,8 @@ def profile_memory_per_line(klio_config, config_meta, **kwargs):
 )
 @options.image_tag
 @options.force_build
-@options.interval
-@options.plot_graph
+@core_options.interval
+@core_options.plot_graph
 @options.input_file(
     help=(
         "File of entity IDs (separated by a new line character) with "
@@ -662,7 +664,7 @@ def profile_memory_per_line(klio_config, config_meta, **kwargs):
     ),
 )
 @options.output_file(help="Output file for results. [default: stdout]")
-@options.show_logs
+@core_options.show_logs
 @click.argument("entity_ids", nargs=-1, required=False)
 @core_utils.with_klio_config
 def profile_cpu(klio_config, config_meta, **kwargs):
@@ -688,8 +690,8 @@ def profile_cpu(klio_config, config_meta, **kwargs):
     ),
 )
 @options.output_file(help="Output file for results. [default: stdout]")
-@options.iterations
-@options.show_logs
+@core_options.iterations
+@core_options.show_logs
 @click.argument("entity_ids", nargs=-1, required=False)
 @core_utils.with_klio_config
 def profile_timeit(klio_config, config_meta, **kwargs):

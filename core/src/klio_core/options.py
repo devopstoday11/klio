@@ -67,19 +67,30 @@ class MutuallyExclusiveOption(click.Option):
         )
 
 
-def _verify_gcs_uri(ctx, param, value):
-    if value and not value.startswith("gs://"):
-        raise click.BadParameter(
-            "Unsupported location type. Please provide a GCS location with "
-            "the `gs://` prefix."
-        )
+def override(func):
+    return click.option(
+        "-O",
+        "--override",
+        default=[],
+        multiple=True,
+        help="Override a config value, in the form ``key=value``.",
+    )(func)
 
-    return value
+
+def template(func):
+    return click.option(
+        "-T",
+        "--template",
+        default=[],
+        multiple=True,
+        help=(
+            "Set the value of a config template parameter"
+            ", in the form ``key=value``.  Any instance of ``${key}`` "
+            "in ``klio-job.yaml`` will be replaced with ``value``."
+        ),
+    )(func)
 
 
-#####
-# common options
-#####
 def job_dir(*args, **kwargs):
     mutually_exclusive = kwargs.get("mutex", [])
 
@@ -103,6 +114,7 @@ def job_dir(*args, **kwargs):
     return wrapper
 
 
+# Note: Mutually exclusive for cli but not for exec
 def config_file(*args, **kwargs):
     mutually_exclusive = kwargs.get("mutex", [])
 
@@ -127,25 +139,127 @@ def config_file(*args, **kwargs):
     return wrapper
 
 
-def override(func):
+#####
+# common options
+#####
+def direct_runner(func):
     return click.option(
-        "-O",
-        "--override",
-        default=[],
-        multiple=True,
-        help="Override a config value, in the form ``key=value``.",
+        "--direct-runner",
+        default=False,
+        is_flag=True,
+        help="Run the job locally via the DirectRunner.",
     )(func)
 
 
-def template(func):
+def update(func):
     return click.option(
-        "-T",
-        "--template",
-        default=[],
-        multiple=True,
+        "--update/--no-update",
+        default=None,
+        is_flag=True,
+        help="[Experimental] Update an existing streaming Cloud Dataflow job.",
+    )(func)
+
+
+def show_logs(func):
+    return click.option(
+        "--show-logs",
+        default=False,
+        show_default=True,
+        is_flag=True,
+        help="Show a job's logs while profiling.",
+    )(func)
+
+
+#####
+# options for `klioexec profile memory
+#####
+def interval(func):
+    return click.option(
+        "--interval",
+        default=0.1,
+        show_default=True,
+        type=float,
+        help="Sampling period (in seconds).",
+    )(func)
+
+
+def include_children(func):
+    return click.option(
+        "--include-children",
+        default=False,
+        show_default=True,
+        is_flag=True,
+        help="Monitor forked processes as well (sums up all process memory).",
+    )(func)
+
+
+def multiprocess(func):
+    return click.option(
+        "--multiprocess",
+        default=False,
+        show_default=True,
+        is_flag=True,
         help=(
-            "Set the value of a config template parameter"
-            ", in the form ``key=value``.  Any instance of ``${key}`` "
-            "in ``klio-job.yaml`` will be replaced with ``value``."
+            "Monitor forked processes creating individual plots for each "
+            "child."
         ),
+    )(func)
+
+
+def plot_graph(func):
+    return click.option(
+        "-g",
+        "--plot-graph",
+        default=False,
+        show_default=True,
+        is_flag=True,
+        help=(
+            "Plot memory profile using matplotlib. Saves to "
+            "klio_profile_memory_<YYYYMMDDhhmmss>.png."
+        ),
+    )(func)
+
+
+#####
+# options for `klio job profile memory-per-line`
+#####
+def maximum(func):
+    return click.option(
+        "--maximum",
+        "get_maximum",
+        default=False,
+        show_default=True,
+        is_flag=True,
+        cls=MutuallyExclusiveOption,
+        mutually_exclusive=["per_element"],
+        help=(
+            "Print maximum memory usage per line in aggregate of all input "
+            "elements process."
+        ),
+    )(func)
+
+
+def per_element(func):
+    return click.option(
+        "--per-element",
+        default=False,
+        show_default=True,
+        is_flag=True,
+        cls=MutuallyExclusiveOption,
+        mutually_exclusive=["maximum"],
+        help="Print memory usage per line for each input element processed.",
+    )(func)
+
+
+#####
+# options for `klioexec profile timeit`
+#####
+def iterations(func):
+    return click.option(
+        "-n",
+        "--iterations",
+        default=10,
+        show_default=True,
+        type=int,
+        help="Number of times to execute each entity ID provided.",
     )(func)
